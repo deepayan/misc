@@ -1,0 +1,6 @@
+
+export(fun1, fun2)
+
+importFrom(utils, str)
+
+

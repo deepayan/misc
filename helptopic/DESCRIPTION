@@ -1,0 +1,10 @@
+Package: topichelp
+Version: 0.0-1
+Title: HTML help system issues
+Author: Deepayan Sarkar
+Maintainer: Deepayan Sarkar <deepayan.sarkar@gmail.com>
+Description: Test cases for help system links.
+Depends: R (>= 3.0.0)
+License: GPL-3
+NeedsCompilation: no
+Packaged: 2020-07-10 08:52:07 UTC; deepayan
