@@ -14,6 +14,16 @@ fun2(x, ...)
   \item{x}{An object.}
   \item{\dots}{Extra arguments.}
 }
+\details{
+
+  This file documents a proposed change to the lookup rule in R's
+  dynamic HTML help system, and identifies existing links on CRAN that
+  will need to be updated to continue working as intended.
+
+  The source of this documentation can be found at
+  \url{https://github.com/deepayan/misc/blob/master/helptopic/man/funs.Rd}
+
+}
 \section{Current status}{
 
   The R help system includes a concept of hyperlinks to other help
@@ -137,18 +147,27 @@ fun2(x, ...)
   are many instances of packages on CRAN where this interpretation has
   been assumed, because of the support for topic links in the dynamic
   help system (such links do not currently work with static HTML).
-  
-  Unfortunately, switching completely to a topic-only lookup rule would
-  be unfair to careful package authors who have intentionally linked to
-  files. So the proposal is only to \emph{prefer} topics and fall back
-  to files when they do not exist.
+
+  Implementing this should not be difficult, but unfortunately,
+  switching completely to a topic-only lookup rule would be unfair to
+  careful package authors who have intentionally linked to files. So the
+  proposal is only to \emph{prefer} topics and fall back to files when
+  they do not exist.
   
   This still leaves open the possibility of penalizing careful package
   authors under certain special circumstances; namely, the package
   \pkg{pkg} has a file \code{foo.Rd}, as well as a topic
-  \code{\\alias{foo}} but in a \emph{different} file. The example code
-  below finds instances of such occurrences on CRAN (there are 79 such
-  packages).
+  \code{\\alias{foo}} but in a \emph{different} file \code{bar.Rd}. In
+  such cases, a link like \code{\\link[pkg:foo]{link-text}} would change
+  meaning; from being a link to \code{foo.Rd} it will become a link to
+  \code{bar.Rd}.
+
+  The example code below finds instances of such occurrences on CRAN
+  (yielding 79 such packages). Fortunately, in all these cases, the name
+  of the file (\code{bar.Rd}) is not an alias in the package (i.e.,
+  there is no \code{\\alias{bar}}), so links of the form
+  \code{\\link[pkg:bar]{link-text}} would unambiguously link to
+  \code{bar.Rd}.
 
   This is still not a problem unless there are \emph{other} packages
   that actually link to one of these ambiguous topic / file
@@ -156,73 +175,209 @@ fun2(x, ...)
   we need to analyze. Fortunately, there are not many packages that
   potentially need fixing, but we do need to find a resolution that will
   work both in pre- and post-change versions of R.
-  
 
- 
-  EcoGenetics/man/EcoGenetics-package.Rd: Conversion to and from
-  \link[adegenet]{genpop} is defined.
+  The examples are organized by target package.
 
-  fakemake/man/check_archive.Rd: \code{\link[callr:rcmd_safe]{callr::rcmd_safe}("check")},
-
-  FHtest/man/FHtesticp.Rd: see details in \link[perm]{perm}
-
-  interval/man/ictest.Rd: see details in \code{\link[perm]{perm}}
-
-  interval/man/ictest.Rd: see \code{\link[perm]{perm}}
-
-  IsoriX/man/isofit.Rd: \code{\link[spaMM]{Matern.corr}} for information
-
-  LambertW/man/W.Rd: \code{\link[lamW:lamW]{lambertW0_C}} and 
-
-  LambertW/man/W.Rd: \code{\link[lamW:lamW]{lambertWm1_C}} in the
-  \pkg{lamW} package
-
-  LambertW/man/W.Rd:\code{W} is a wrapper for \code{\link[lamW:lamW]{lambert_W0C}} 
-
-  LambertW/man/W.Rd: \code{\link[lamW:lamW]{lambert_Wm1_C}} in the \pkg{lamW} package.
-
-  LambertW/man/W.Rd: \code{\link[lamW:lamW]{lambertW0_C}} and
-
-  LambertW/man/W.Rd: \code{\link[lamW:lamW]{lambertWm1_C}} in the
-  \pkg{lamW} package;
-
-  pegas/man/conversion.Rd: \code{\link[adegenet]{genind}},
-
-  pkgbuild/man/rcmd_build_tools.Rd: wrapper around
-  \code{\link[callr:rcmd_safe]{callr::rcmd_safe()}}
-
-  poppr/man/aboot.Rd: \code{\link[adegenet:genind]{adegenet::genind()}}
-
-  poppr/man/aboot.Rd: \code{\link[adegenet:genpop]{adegenet::genpop()}}
-  with the specified strata.
-
-  poppr/man/make_haplotypes-method.Rd: \link[adegenet:genind]{genind} or
-  \link[adegenet:genlight]{genlight} object.
-
-  popprxl/man/read.genalexcel.Rd:a \code{\link[poppr]{genclone}} or
-  \code{\link[adegenet]{genind}}
-
-  rules/man/C5_rules.Rd:converted to numeric indicator values. Note that
-  using \code{\link[parsnip:fit]{parsnip::fit()}} will
-
-  rules/man/C5_rules.Rd:\code{\link[parsnip:fit]{parsnip::fit()}},
-  \code{\link[parsnip:fit_xy]{parsnip::fit_xy()}},
-  \code{\link[C50:C5.0]{C50::C5.0()}},
-
-  rules/man/cubist_rules.Rd:converted to numeric indicator values. Note
-  that using \code{\link[parsnip:fit]{parsnip::fit()}} will
-
-  rules/man/cubist_rules.Rd:\code{\link[parsnip:fit]{parsnip::fit()}},
-  \code{\link[parsnip:fit_xy]{parsnip::fit_xy()}},
-  \code{\link[Cubist:cubist]{Cubist::cubist()}},
-
-  rules/man/rule_fit.Rd: \code{\link[parsnip:fit]{parsnip::fit()}},
-  \code{\link[parsnip:fit_xy]{parsnip::fit_xy()}},
-  \code{\link[xrf:xrf.formula]{xrf::xrf.formula()}}
-
-  workflows/man/fit-workflow.Rd: using
-  \code{\link[parsnip:fit]{parsnip::fit.model_spec()}}
 }
+
+
+\section{\pkg{adegenet}}{
+
+  Topic \code{genind} is documented in file \code{new.genind.Rd}. File
+  \code{genind.Rd} documents \code{genind-class} and other related methods.
+
+  Topic \code{genpop} is documented in file \code{new.genind.Rd}. File
+  \code{genpop.Rd} documents \code{genpop-class} and other related methods.
+
+  The following packages link to either of these (\code{genind.Rd} and
+  \code{genpop.Rd}):
+
+  \itemize{
+  
+    \item EcoGenetics/man/EcoGenetics-package.Rd: Conversion to and from
+    \link[adegenet]{genpop} is defined.
+
+    \item pegas/man/conversion.Rd: \code{\link[adegenet]{genind}},
+
+    \item poppr/man/make_haplotypes-method.Rd: \link[adegenet:genind]{genind} object.
+
+    \item popprxl/man/read.genalexcel.Rd: \code{\link[adegenet]{genind}}
+
+    \item poppr/man/aboot.Rd: \code{\link[adegenet:genind]{adegenet::genind()}}
+
+    \item poppr/man/aboot.Rd: \code{\link[adegenet:genpop]{adegenet::genpop()}}
+    with the specified strata.
+
+  }
+
+  All these currently link to the class page and not the function
+  page. This is probably as intended in several cases, although probably
+  not in at least the last two examples. Under the new proposal, these
+  will link to the function page.
+
+  Links of the following form should work both under the current and
+  proposed rules:
+
+  \itemize{
+
+    \item For the \link[adegenet:genind-class]{class page}:
+    \code{\\link[adegenet:genind-class]{link-text}}
+
+    \item For the \link[adegenet:new.genind]{function page}:
+    \code{\\link[adegenet:new.genind]{link-text}}
+
+
+  }
+
+  
+}
+
+
+
+\section{\pkg{callr}}{
+
+  The following instances of \code{\\link[callr:rcmd_safe]} both
+  currently link to the topic \code{rcmd_safe_env} in
+  \code{rcmd_safe.Rd}, which is likely not intended. The topic
+  \code{rcmd_safe} is documented in file \code{rcmd.Rd}.
+  
+  \itemize{
+
+    \item fakemake/man/check_archive.Rd:
+    \code{\link[callr:rcmd_safe]{callr::rcmd_safe}("check")},
+
+    \item pkgbuild/man/rcmd_build_tools.Rd: wrapper around
+    \code{\link[callr:rcmd_safe]{callr::rcmd_safe()}}
+
+  }
+
+  These will work as intended under the proposed scheme, so probably
+  best to leave them alone. Alternatively, change
+  \code{[callr:rcmd_safe]} to \code{[callr:rcmd]}.
+
+}
+
+
+\section{\pkg{lamW}}{
+
+  The file \code{lamW.Rd} documents several functions, whereas the topc
+  \code{lamW} is documented in file \code{lamW-package.Rd}. So the
+  following links are all explicit and correct file links that will stop
+  working in the proposed scheme.
+
+  \itemize{
+  
+    \item LambertW/man/W.Rd: \code{\link[lamW:lamW]{lambertW0_C}} and
+
+    \item LambertW/man/W.Rd: \code{\link[lamW:lamW]{lambertWm1_C}} in
+    the \pkg{lamW} package
+
+    \item LambertW/man/W.Rd:\code{W} is a wrapper for
+    \code{\link[lamW:lamW]{lambert_W0C}}
+
+    \item LambertW/man/W.Rd: \code{\link[lamW:lamW]{lambert_Wm1_C}} in
+    the \pkg{lamW} package.
+
+    \item LambertW/man/W.Rd: \code{\link[lamW:lamW]{lambertW0_C}} and
+
+    \item LambertW/man/W.Rd: \code{\link[lamW:lamW]{lambertWm1_C}} in
+    the \pkg{lamW} package;
+
+  }
+
+  A fix that will work under both current and proposed schemes is to
+  change \code{\\link[lamW:lamW]{lambertW0_C}} to the simpler
+  \code{\link[lamW:lambertW0_C]{\\link[lamW]\{lambertW0_C\}}},
+  etc. Unfortunately, this will no longer work for static pages in the
+  current scheme, but that is hopefully a minor consideration.
+  
+}
+
+
+\section{\pkg{parsnip}}{
+
+  The only problematic link here is topic \code{fit} which is documented
+  in file \code{reexports.Rd} (as a rexported generic), while the file
+  \code{fit.Rd} documents the S3 method \code{fit.model_spec}. For the
+  links below that have the form \code{\\link[parsnip:fit]{link-text}},  the
+  intent is almost certainly to link to \code{fit.Rd}, as the links
+  below currently do, but that will change under the proposed scheme.
+
+  \itemize{
+
+    \item rules/man/C5_rules.Rd:converted to numeric indicator
+    values. Note that using \code{\link[parsnip:fit]{parsnip::fit()}}
+    will
+
+    \item rules/man/C5_rules.Rd:
+    \code{\link[parsnip:fit]{parsnip::fit()}},
+    \code{\link[parsnip:fit_xy]{parsnip::fit_xy()}}, ...
+
+    \item rules/man/cubist_rules.Rd: Note that using
+    \code{\link[parsnip:fit]{parsnip::fit()}} will
+
+    \item rules/man/cubist_rules.Rd:
+    \code{\link[parsnip:fit]{parsnip::fit()}},
+    \code{\link[parsnip:fit_xy]{parsnip::fit_xy()}}, ...
+    
+    \item rules/man/rule_fit.Rd:
+    \code{\link[parsnip:fit]{parsnip::fit()}},
+    \code{\link[parsnip:fit_xy]{parsnip::fit_xy()}}, ...
+
+    \item workflows/man/fit-workflow.Rd: using
+    \code{\link[parsnip:fit]{parsnip::fit.model_spec()}}
+
+  }
+
+  A fix that would work with both current and proposed schemes would be
+  change to links of the form
+  \code{\link[parsnip:fit.model_spec]{\\link[parsnip:fit.model_spec]\{link-text\}}}.
+  
+}
+
+\section{\pkg{perm}}{
+
+  Here in \code{perm.Rd} file documents topics \code{permTS},
+  \code{permKS}, etc., and the topic \code{perm} is in file
+  \code{perm-package.Rd}.
+
+  \itemize{
+  
+    \item FHtest/man/FHtesticp.Rd: see details in \link[perm]{perm}
+
+    \item interval/man/ictest.Rd: see details in \code{\link[perm]{perm}}
+
+    \item interval/man/ictest.Rd: see \code{\link[perm]{perm}}
+
+  }
+
+  The links (all \code{\\link[perm]{perm}}) above currently link to the
+  file; to continue this in a back-compatible manner, they should be
+  changed to \code{\link[perm:permTS]{\\link[perm:permTS]\{perm\}}}.
+  
+}
+
+\section{\pkg{spaMM}}{
+
+  The file \code{Matern.corr.Rd} documents topic \code{MaternCorr},
+  while the topic \code{Matern.corr} is an alias in
+  \code{spaMM-internal.Rd}. The link
+
+  \itemize{
+    
+    \item IsoriX/man/isofit.Rd: \code{\link[spaMM]{Matern.corr}} for information
+
+  }
+
+  is likely meant to be to the file \code{Matern.corr.Rd}, and so should
+  be changed to
+  \code{\link[spaMM:MaternCorr]{\\link[spaMM:MaternCorr]\{Matern.corr\}}},
+  or probably more appropriately and simply, to
+  \code{\link[spaMM]{\\link[spaMM]\{MaternCorr\}}}.
+
+}
+
+
 \examples{
 
 a <- tools:::CRAN_aliases_db()
