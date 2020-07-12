@@ -18,7 +18,8 @@ fun2(x, ...)
 
   This file documents a proposed change to the lookup rule in R's
   dynamic HTML help system, and identifies existing links on CRAN that
-  will need to be updated to continue working as intended.
+  will need to be updated to continue working as intended. It is also
+  meant to serve as a source of test cases for the proposed change.
 
   The source of this documentation can be found at
   \url{https://github.com/deepayan/misc/blob/master/helptopic/man/funs.Rd}
@@ -67,19 +68,20 @@ fun2(x, ...)
 
   }
   
-  Since R 2.10.0 or thereabouts, a new dynamic help system was
-  introduced to enable features not possible in static HTML files, such
-  as the ability to include content generated dynamically at the time of
+  In R 2.10.0 or thereabouts, a new dynamic help system was introduced
+  to enable features not possible in static HTML files, such as the
+  ability to include content generated dynamically at the time of
   rendering the page. This new system also modified the interpretation
   for \code{\\link[pkg:foo]{link-text}}:
 
   \itemize{
 
     \item If the file \code{pkg/man/foo.Rd} exists, it would link to
-    that file.
+    the corresponding HTML file \code{foo.html}.
 
     \item However, if this file \emph{does not} exist, it would link to
-    the file containing the \emph{topic} (\code{\\alias{}}) \code{foo}.
+    the file containing the \emph{topic} \code{foo} (i.e.,
+    \code{\\alias{foo}}).
 
     \item However, the link URL continues to be of the form
     \code{foo.html} in either case.
@@ -119,7 +121,7 @@ fun2(x, ...)
   generated HTML in any way, we must have a \code{topic.html} file
   available for every topic (alias) in a package. This can be done
   easily by creating small one-line HTTP redirect files pointing to the
-  actual target file.
+  actual target file while processing the package man files.
 
   To ensure that filenames get priority over topics, we only need to
   ensure that
@@ -152,7 +154,7 @@ fun2(x, ...)
   switching completely to a topic-only lookup rule would be unfair to
   careful package authors who have intentionally linked to files. So the
   proposal is only to \emph{prefer} topics and fall back to files when
-  they do not exist.
+  the topic does not exist.
   
   This still leaves open the possibility of penalizing careful package
   authors under certain special circumstances; namely, the package
@@ -253,7 +255,8 @@ fun2(x, ...)
 
   These will work as intended under the proposed scheme, so probably
   best to leave them alone. Alternatively, change
-  \code{[callr:rcmd_safe]} to \code{[callr:rcmd]}.
+  \code{\link[callr:rcmd_safe]{\\link[callr:rcmd_safe]\{link-text\}}} to
+  \code{\link[callr:rcmd]{\\link[callr:rcmd]\{link-text\}}}.
 
 }
 
@@ -337,7 +340,7 @@ fun2(x, ...)
 
 \section{\pkg{perm}}{
 
-  Here in \code{perm.Rd} file documents topics \code{permTS},
+  Here the file \code{perm.Rd} documents topics \code{permTS},
   \code{permKS}, etc., and the topic \code{perm} is in file
   \code{perm-package.Rd}.
 
@@ -352,8 +355,9 @@ fun2(x, ...)
   }
 
   The links (all \code{\\link[perm]{perm}}) above currently link to the
-  file; to continue this in a back-compatible manner, they should be
-  changed to \code{\link[perm:permTS]{\\link[perm:permTS]\{perm\}}}.
+  file, which is likely as intended. To continue this in a
+  back-compatible manner, they should be changed to
+  \code{\link[perm:permTS]{\\link[perm:permTS]\{perm\}}}.
   
 }
 
