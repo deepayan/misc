@@ -402,10 +402,10 @@ ambiguousTopics <- function(pkg)
     for (i in seq_along(files))
     {
         otherfiles[i] <-
-            names(which(sapply(a[[pkg]], function(x) files[i] %in% x)))
+            names(which(sapply(a[[pkg]], function(x) files[i] \%in\% x)))
     }
     ## Is 'otherfile' also a topic somewhere in the package?
-    also_topic <- otherfiles %in% unlist(a[[pkg]])
+    also_topic <- otherfiles \%in\% unlist(a[[pkg]])
     data.frame(pkg = pkg, file = files, topicfile = otherfiles,
                also_topic = also_topic)
 }
