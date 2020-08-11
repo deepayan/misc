@@ -152,40 +152,6 @@ escapeAmpersand <- function(x) gsub("&", "&amp;", x, fixed = TRUE)
 invalid_HTML_chars_re <-
     "[\u0001-\u0008\u000b\u000c\u000e-\u001f\u007f-\u009f]"
 
-
-createRedirects <- function(file, Rdobj)
-{
-    linksToTopics <-
-        config_val_to_logical(Sys.getenv("_R_HELP_LINKS_TO_TOPICS_", "FALSE"))
-    ## cat("\nCalled createRedirects: file = ", file, "\n")
-    ## create a HTTP redirect for each 'alias' that is different from the file name
-    redirHTML <-
-        if (linksToTopics) sprintf("<html><head><meta http-equiv='refresh' content='0; url=../html/%s'></head></html>\n", urlify(basename(file)))
-        else sprintf("<html><head><meta http-equiv='refresh' content='0; url=%s'></head></html>\n", urlify(basename(file)))
-    toProcess <- which(RdTags(Rdobj) == "\\alias")
-    ## str(list(toProcess, RdTags(Rdobj), "\\alias"))
-    filedir <-
-        if (linksToTopics) paste0(dirname(dirname(file)), "/help") # .../pkg/help/
-        else  dirname(file) # .../pkg/html/
-    aliasFile <- function(i) paste0(filedir, "/", sprintf("%s.html", Rdobj[[i]][[1]]))
-    for (i in toProcess)
-    {
-        afile <- aliasFile(i)
-        if (afile != file)
-        {
-            ## FIXME: if (linksToTopics) also add
-            ## .../pkg/help/file.html -> ../pkg/html/file.html as fallback
-            ## when topic is not found (but do not overwrite)
-            cat(sprintf("\nREDIRECT:\t %s -> %s ", afile, basename(file)))
-            if (file.exists(afile)) warning("Duplicated alias: ", Rdobj[[i]][[1]])
-            ## cat(redirHTML)
-            try(cat(redirHTML, file = afile), silent = TRUE) # Fails for \alias{%/%}
-            cat(if (file.exists(afile)) "[ SUCCESS ]" else "[ FAIL ]")
-        }
-    }
-}
-
-
 ## This gets used two ways:
 
 ## 1) With dynamic = TRUE from tools:::httpd()
@@ -214,8 +180,6 @@ Rd2HTML <-
              stylesheet = "R.css", ...)
 {
     if (missing(no_links) && is.null(Links) && !dynamic) no_links <- TRUE
-    linksToTopics <-
-        config_val_to_logical(Sys.getenv("_R_HELP_LINKS_TO_TOPICS_", "FALSE"))
     version <- ""
     if(!identical(package, "")) {
         if(length(package) > 1L) {
@@ -421,22 +385,12 @@ Rd2HTML <-
                     }
                 }
             }
-            if (parts$pkg == package) { # within same package
-                if (linksToTopics)
-                    htmlfile <- paste0("../help/", urlify(parts$targetfile),
-                                       if (!dynamic) ".html" else "")
-                ## else # not needed as htmlfile already defined
-                ## ## use href = "file.html"
-                ##     htmlfile <- paste0(urlify(parts$targetfile), ".html")
+            if (parts$pkg == package) {
+                ## use href = "file.html"
                 writeHref()
-            } else {  # link to different package
+            } else {
                 ## href = "../../pkg/html/file.html"
-                if (linksToTopics)
-                    htmlfile <- paste0("../../", urlify(parts$pkg), "/help/",
-                                       urlify(parts$targetfile),
-                                       if (!dynamic) ".html" else "")
-                else
-                    htmlfile <- paste0("../../", urlify(parts$pkg), "/html/", htmlfile)    
+                htmlfile <- paste0("../../", urlify(parts$pkg), "/html/", htmlfile)
                 writeHref()
             }
         }
@@ -803,13 +757,11 @@ Rd2HTML <-
     }
 
     ## ----------------------- Continue in main function -----------------------
-    create_redirects <- FALSE
     if (is.character(out)) {
         if (out == "") {
             con <- stdout()
         } else {
 	    con <- file(out, "wt")
-            create_redirects <- !dynamic
 	    on.exit(close(con))
 	}
     } else {
@@ -829,7 +781,6 @@ Rd2HTML <-
     	    for (i in seq_along(sections))
     	    	writeBlock(Rd[[i]], sections[i], "")
     } else {
-        if (create_redirects) createRedirects(out, Rd)
 	name <- htmlify(Rd[[2L]][[1L]])
 
         of0('<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">',
