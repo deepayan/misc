@@ -289,13 +289,12 @@ fun2(x, ...)
   }
 
   A fix that should work under both current and proposed schemes is to
-  change \code{\\link[lamW:lamW]{lambertW0_C}} to the simpler
-  \code{\link[lamW:lambertW0_C]{\\link[lamW]\{lambertW0_C\}}},
-  etc. Unfortunately, this will no longer work for static pages in the
-  current scheme, but that is hopefully a minor consideration. More
-  importantly, in this case, the alias \code{lambertW0_C} also appears
-  in an internal file: \url{../../lamW/help/lambertW0_C}, which is where
-  the lookup goes.
+  change \code{\\link[lamW:lamW]{lambertW0_C}} to the simpler and more
+  correct \code{\link[lamW:lambertW0_C]{\\link[lamW]\{lambertW0\}}},
+  etc. (\code{lambertW0_C} is an internal function, not supposed to be
+  user-callable, and not documented in \code{lamW.Rd}). Unfortunately,
+  this will no longer work for static pages in the current scheme, but
+  that is hopefully a minor consideration.
   
 }
 
