@@ -1,6 +1,7 @@
 \name{does_not_matter_either}
 \alias{fun2}
 \alias{fun3}
+\alias{fun4}
 \title{A duplicate alias}
 \description{
   This file documents \code{fun2}, which is already documented in \link{fun1}.
@@ -18,7 +19,8 @@ fun3(x, ...)
   \code{R CMD check}.
 
   Other than that, this file checks for possible problems in how
-  within-package links are handled.
+  within-package links are handled, as well as potential problems with
+  special characters and case.
 
   The usual forms of a within-package link to a topic \code{foo} are
 
@@ -81,5 +83,46 @@ fun3(x, ...)
   }
 
 }
+
+\section{Special characters}{
+
+  Math operator aliases in particular could lead to weird
+  filenames. Here are some examples:
+
+  \itemize{
+    
+    \item \code{\link[base]{Arithmetic}} (file name, but also alias)
+    \item \code{\link[base]{+}} 
+    \item \code{\link[base]{-}} 
+    \item \code{\link[base]{*}} 
+    \item \code{\link[base]{**}} 
+    \item \code{\link[base]{/}} 
+    \item \code{\link[base]{^}} 
+    \item \code{\link[base]{\%\%}} 
+    \item \code{\link[base]{\%/\%}} 
+    \item \code{\link[magrittr]{\%>\%}} 
+    \item \code{\link[base]{\%*\%}} 
+    \item \code{\link[base]{\%in\%}} 
+
+  }
+
+}
+
+\section{Case mismatch}{
+
+  Filenames on Windows / Mac (?) are not case-sensitive; this could lead
+  to problems particularly with aliases that differ by case.
+
+  These links to grid have the wrong case: \code{\link[grid]{rectgrob}};
+  \code{\link[grid]{GRID.RECT}}.
+
+  The following pairs of aliases are both valid, but are in different files.
+
+  Explicit package links: \code{\link[topichelp]{FUN4}}; \code{\link[topichelp]{fun4}}.
+
+  Implicit package links: \code{\link{FUN4}}; \code{\link{fun4}}.
+
+}
+
 \keyword{documentation}
 

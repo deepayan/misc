@@ -1,7 +1,8 @@
 \name{does_not_matter}
 \alias{fun1}
 \alias{fun2}
-\title{ Help system links }
+\alias{FUN4}
+\title{Help system links}
 \description{
   Examples of help system links that need to be handled carefully if we
   change the current lookup order.
