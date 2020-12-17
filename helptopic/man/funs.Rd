@@ -228,10 +228,7 @@ fun2(x, ...)
 
     \item For the \link[adegenet:new.genind]{function page}:
     \code{\\link[adegenet:new.genind]{link-text}}
-
-
   }
-
   
 }
 

@@ -1,7 +1,7 @@
 
 
 ## Proof-of-concept implementation of completion for NSE functions.
-
+## source() this file to use.
 
 custom.argument.completer <- function(fun, text, ...)
 {
@@ -48,31 +48,52 @@ NSE1 <- c("with", "within", "subset", "transform", "mutate", "dplyr::mutate", "f
 
 NSE1Completer <- function(token)
 {
-    linebuffer <- rc.status()$linebuffer
+    linebuffer <- with(rc.status(), substring(linebuffer, 1, end)) # ignore anything afterwards
     ## simple breakup: just { whitespace, '(', ',' }
     words <- strsplit(linebuffer, split = "[[:space:],(]+")[[1]]
-    if (length(wwith <- which(words %in% NSE1)))
+    if (length(ww <- which(words %in% NSE1)))
     {
-        ## Find completions in 'object' immediately following the NSE
-        ## function (use last one if many). We could alternatively
-        ## loop through all occurrences and accumulate, but that's
-        ## unlikely to be very useful.
+        ## Normally, we would want to find completions in the 'object'
+        ## that immediately follows the NSE function. If there are
+        ## multiple such functions, we will use the last one.  We
+        ## could alternatively loop through all occurrences and
+        ## accumulate, but that's unlikely to be very useful.
 
-        ## This will fail if the actual object (first argument of NSE
-        ## function) is a complex expression (like a function call)
-        ## that was broken up by strsplit() above
-        withWhat <- tryToEval(words[wwith[length(wwith)] + 1])
-        validNames <- .DollarNames(withWhat)
+        ## However, if the NSE function is itself the last word, or if
+        ## we are currently somewhere inside the first argument after
+        ## it, then it's possible that we are using a pipeline
+        ## operator. Checking that we are in the first argument is
+        ## more complicated (go upto next comma and try to evaluate?
+        ## and do that for all commas?), but we can easily handle the
+        ## simple case
+
+        w <- ww[length(ww)]
+        if (w == length(words) || words[w + 1] == token)
+        {
+            ## Possibly pipeline. Verify first:
+            if (words[w-1] %in% c("|>", "%>%"))
+            {
+                ## Need to get linebuffer upto pipeline operator.
+                ## Split on it and join again leaving out last
+                pipeOp <- words[w-1]
+                pipeComps <- strsplit(linebuffer, split = pipeOp, fixed = TRUE)[[1]]
+                object <- tryToEval( paste(pipeComps[-length(pipeComps)], collapse = pipeOp) )
+            }
+            else
+                object <- NULL
+        }
+        else
+        {
+            ## This will fail if the actual object (first argument of NSE
+            ## function) is a complex expression (like a function call)
+            ## that was broken up by strsplit() above
+            object <- tryToEval(words[w + 1])
+        }
+        validNames <- .DollarNames(object)
         return(findCompletions(token, validNames))
     }
     else return(character(0))
 }
-
-## Supporting pipelines would need more work, but should be possible
-## if the complete LHS is available and can be evaluated. The NSE1
-## function should then be immediately preceded by the pipeline
-## operator, and everything to the left of that should be evaluated to
-## get the object to look in.
 
 
 
