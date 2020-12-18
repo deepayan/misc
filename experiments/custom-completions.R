@@ -35,6 +35,7 @@ if (FALSE)
 ## consecutively.
 
 .lastEvalAttempt <- new.env(parent = emptyenv())
+.lastEvalAttempt$text <- ""
 
 tryToEval <- function(s)
 {
@@ -58,7 +59,7 @@ findCompletions <- function(token, values) # should eventually export this from 
 
 NSE1 <- c("with", "within", "subset", "transform", "mutate",
           "dplyr::mutate", "filter", "dplyr::filter", "select",
-          "dplyr::select")
+          "dplyr::select", "xyplot")
 
 NSE1CompleterPipe <- function(token)
 {
