@@ -5,7 +5,9 @@
 
 custom.argument.completer <- function(fun, text, ...)
 {
-    c(NSE1CompleterStandard(text), NSE1CompleterPipe(text))
+    ans <- NSE1CompleterPipe(text)
+    if (!length(ans)) ans <- NSE1CompleterStandard(text)
+    ans
 }
 
 custom.quote.completer <- function(fullToken, ...)
@@ -27,11 +29,19 @@ if (FALSE)
     ## with(fm, mean(xle))
 }
 
-## FIXME: add some cache-ing. At a minimum, the same string should not
-## be evaluated consecutively.
+
+
+## Add some cache-ing: the same string should not be evaluated
+## consecutively.
+
+.lastEvalAttempt <- new.env(parent = emptyenv())
+
 tryToEval <- function(s)
 {
-    tryCatch(eval(str2expression(s), envir = .GlobalEnv), error = function(e) NULL)
+    if (s == .lastEvalAttempt$text) return(.lastEvalAttempt$object)
+    .lastEvalAttempt$text <- s
+    .lastEvalAttempt$object <- tryCatch(eval(str2expression(s), envir = .GlobalEnv), error = function(e) NULL)
+    .lastEvalAttempt$object
 }
 
 findCompletions <- function(token, values) # should eventually export this from utils
