@@ -12,7 +12,8 @@ custom.argument.completer <- function(fun, text, ...)
 
 custom.quote.completer <- function(fullToken, ...)
 {
-    str(list(fullToken = fullToken, ...))
+    ## str(list(fullToken = fullToken, ...))
+    ## TODO
     character(0)
 }
 
@@ -30,7 +31,6 @@ if (FALSE)
 }
 
 
-
 ## Add some cache-ing: the same string should not be evaluated
 ## consecutively.
 
@@ -39,14 +39,19 @@ if (FALSE)
 
 tryToEval <- function(s)
 {
-    if (s == .lastEvalAttempt$text) return(.lastEvalAttempt$object)
-    .lastEvalAttempt$text <- s
-    .lastEvalAttempt$object <- tryCatch(eval(str2expression(s), envir = .GlobalEnv), error = function(e) NULL)
-    .lastEvalAttempt$object
+    if (s != .lastEvalAttempt$text) {
+        .lastEvalAttempt$text <- s
+        .lastEvalAttempt$object <-
+            tryCatch(eval(str2expression(s),
+                          envir = .GlobalEnv), error = function(e) NULL)
+    }
+    return(.lastEvalAttempt$object)
 }
 
-findCompletions <- function(token, values) # should eventually export this from utils
+findCompletions <- function(token, values)
 {
+    ## should eventually export this from utils. Takes care of 'fuzzy'
+    ## matching if enabled.
     utils:::findMatches(sprintf("^%s", utils:::makeRegexpSafe(token)), values)
 }
 
@@ -54,18 +59,29 @@ findCompletions <- function(token, values) # should eventually export this from 
 ## without a parse tree, we can only try to do string matching. The
 ## actual function we are immediately inside is not relevant.
 
-## List of known NSE functions where evaluating inside the first
-## argument is appropriate
+## List of "known" NSE functions where evaluating inside the _first_
+## argument is appropriate. Should match with how breakRE is defined
+## below.
 
-NSE1 <- c("with", "within", "subset", "transform", "mutate",
-          "dplyr::mutate", "filter", "dplyr::filter", "select",
-          "dplyr::select", "xyplot")
+NSE1 <- c("with", "within", "subset", "transform", "mutate", "filter",
+          "select",
+          ## "dplyr::mutate", "dplyr::filter", "dplyr::select",
+          "xyplot")
+
+## NOTE: xyplot() shouln't really be on this list, but allows us to
+## complete xyplot(data = faithful, eruptions ~ waiting), although it
+## also allows NSE completions in other arguments, which it
+## shouldn't. Would be nice to be able to handle formula-interface
+## functions in a systematic manner.
+
+
 
 NSE1CompleterPipe <- function(token)
 {
     rcs <- rc.status()
     if (rcs$start == 0) return(character(0))
     linebuffer <- with(rcs, substring(linebuffer, 1, start)) # ignore anything afterwards
+    .lastEvalAttempt$linebuffer <- linebuffer
     ## break up by pipeline operators: "|>" and "%>%" for now
     mpipe.words <- strsplit(linebuffer, split = "%>%", fixed = TRUE)[[1]]
     bpipe.words <- strsplit(linebuffer, split = "|>", fixed = TRUE)[[1]]
@@ -98,38 +114,107 @@ NSE1CompleterPipe <- function(token)
 }
 
 
+callingFunctions <- function(line, cursor)
+{
+    ## Want to analyze linebuffer upto cursor position, and figure out
+    ## which functions we are currently inside. This is similar to
+    ## utils:::inFunction(), which only gives the immediate calling
+    ## function. This is a simplified version, and recursively calls
+    ## itself to get a list of all calling functions
+
+    ## Are we inside a function? Yes if the number of ( encountered
+    ## going backwards exceeds number of ).  In that case, we would
+    ## also like to know what functions we are currently inside
+
+    parens <-
+        sapply(c("(", ")"),
+               function(s) gregexpr(s, substr(line, 1L, cursor), fixed = TRUE)[[1L]],
+               simplify = FALSE)
+    ## remove -1's
+    parens <- lapply(parens, function(x) x[x > 0])
+
+    ## The naive algo is as follows: set counter = 0; go backwards
+    ## from cursor, set counter-- when a ) is encountered, and
+    ## counter++ when a ( is encountered.  We are inside a function
+    ## that starts at the first ( with counter > 0.
+
+    temp <-
+        data.frame(i = c(parens[["("]], parens[[")"]]),
+                   c = rep.int(c(1, -1), lengths(parens)))
+    if (nrow(temp) == 0) return(character())
+    temp <- temp[order(-temp$i), , drop = FALSE] ## order backwards
+    wp <- which(cumsum(temp$c) > 0)
+    if (length(wp)) # inside a function
+    {
+        breakRE <- "[^\\.\\w]" # to identify function names
+        index <- temp$i[wp[1L]]
+        prefix <- substr(line, 1L, index - 1L)
+        suffix <- substr(line, index + 1L, nchar(line)) # useful later
+        ## guess function name
+        possible <- suppressWarnings(strsplit(prefix, breakRE, perl = TRUE))[[1L]]
+        if (length(possible) == 0)
+            NULL
+        else
+        {
+            possible <- tail(possible[nzchar(possible)], 1)
+            ## recursively add further calling functions by shortening cursor
+            rbind(data.frame(fun = possible, suffix = suffix),
+                  callingFunctions(line, index - 1L))
+        }
+    }
+    else NULL
+}
+
+
+firstObjectInString <- function(s)
+{
+    ## We want to use this function to identify the 'object' that
+    ## immediately follows the name of an NSE function (if we are
+    ## completing the first argument, then there is nothing to be
+    ## done). The input is the part of the input line following the
+    ## the NSE function and upto the start of the token.  For a
+    ## non-trivial object to look inside to be present, we must have
+    ## at least one comma in the string, and
+
+    ## Algorithm: look forward for comma after the NSE
+    ## function. Choose the first occurrence which successfully yields
+    ## an evaluated object.
+
+    commas <- gregexpr(",", s, fixed = TRUE)[[1L]]
+    if (commas[1] == -1) return(NULL)
+    for (i in commas)
+    {
+        object <- tryToEval(substr(s, 1L, i - 1L))
+        if (!is.null(object)) return(object)
+    }
+    return(NULL)
+}
+
+
 NSE1CompleterStandard <- function(token)
 {
     rcs <- rc.status()
     if (rcs$start == 0) return(character(0))
     linebuffer <- with(rcs, substring(linebuffer, 1, start)) # ignore anything afterwards
-    ## simple breakup: just { whitespace, '(', ',' }
-    words <- strsplit(linebuffer, split = "[[:space:],(]+")[[1]]
-    if (length(ww <- which(words %in% NSE1)))
+    .lastEvalAttempt$linebuffer <- linebuffer
+    calling.funs <- callingFunctions(linebuffer, rcs$start)
+    if (length(ww <- which(calling.funs$fun %in% NSE1)))
     {
-        ## We want to find completions in the 'object' that
-        ## immediately follows the NSE function. If there are multiple
-        ## such functions, we will use the last one.  We could
-        ## alternatively loop through all occurrences and accumulate,
-        ## but that's unlikely to be very useful.
+        ## It's possible that there are multiple NSE functions in the
+        ## calling chain. We loop through all of them and accumulate,
+        ## because it's not difficult to do it, although it's unlikely
+        ## to be very useful in practice.
 
-        w <- ww[length(ww)]
-        if (w == length(words))
+        ans <- character(0)
+        for (w in ww) # or ww[1] for just most recent one
         {
-            object <- NULL
+            FUN <- calling.funs[w, "fun"]       # NSE function
+            SUFFIX <- calling.funs[w, "suffix"] # part after the NSE function
+            object <- firstObjectInString(SUFFIX)
+            validNames <- .DollarNames(object)
+            ans <- c(ans, findCompletions(token, validNames))
         }
-        else
-        {
-            object <- tryToEval(words[w + 1])
-            ## This will fail if the actual object (first argument of
-            ## NSE function) is a complex expression (like a function
-            ## call) that was broken up by strsplit() above. A more
-            ## sophisticated option could be to look forward to first
-            ## comma, second comma, ... until we find something that
-            ## evaluates to non-NULL
-        }
-        validNames <- .DollarNames(object)
-        return(findCompletions(token, validNames))
+        return(ans)
     }
     else return(character(0))
 }
