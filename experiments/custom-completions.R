@@ -1,5 +1,4 @@
 
-
 ## Proof-of-concept implementation of completion for NSE functions.
 ## source() this file to use.
 
