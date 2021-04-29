@@ -82,6 +82,24 @@ fun3(x, ...)
 
   }
 
+  Such ambiguous links are documented to be OK, in fact recommended, for
+  base and recommended packages (see WRE):
+
+  \itemize{
+
+    \item \code{\\link{print.default}}: \code{\link{print.default}} (base)
+
+    \item \code{\\link{plot.default}}: \code{\link{plot.default}} (graphics)
+
+    \item \code{\\link{plot}}: \code{\link{plot}} (both base
+    and graphics; interactive help gives a choice)
+
+    \item \code{\\link{mle}}: \code{\link{mle}} (stats4)
+
+    \item \code{\\link{panel.qqmath}}: \code{\link{panel.qqmath}} (lattice)
+
+  }
+
 }
 
 \section{Special characters}{
