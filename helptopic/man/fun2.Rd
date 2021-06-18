@@ -124,6 +124,25 @@ fun3(x, ...)
 
   }
 
+  For base and recommended packages, it is safer to \emph{not} specify the packagename, as R will explicitly translate the topic to the appropriate filename when creating the links.
+
+  \itemize{
+
+    \item \code{\link{Arithmetic}} (file name, but also alias)
+    \item \code{\link{+}}
+    \item \code{\link{-}}
+    \item \code{\link{*}}
+    \item \code{\link{**}}
+    \item \code{\link{/}}
+    \item \code{\link{^}}
+    \item \code{\link{\%\%}}
+    \item \code{\link{\%/\%}}
+    \item \code{\link{\%*\%}}
+    \item \code{\link{\%in\%}}
+
+  }
+
+
 }
 
 \section{Case mismatch}{
