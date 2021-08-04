@@ -2,6 +2,8 @@
 \alias{fun2}
 \alias{fun3}
 \alias{fun4}
+\alias{alias with
+newline}
 \title{A duplicate alias}
 \description{
   This file documents \code{fun2}, which is already documented in \link{fun1}.
@@ -142,6 +144,7 @@ fun3(x, ...)
 
   }
 
+  The \code{+} and \code{/} are not escaped properly in dynamic help, and may not resolve properly; e.g., \code{\link[ggplot2]{+.gg}}.
 
 }
 
