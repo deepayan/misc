@@ -116,6 +116,7 @@ fun3(x, ...)
     \item \code{\link[base]{**}} 
     \item \code{\link[base]{/}} 
     \item \code{\link[base]{^}} 
+    \item \code{\link[base]{&}} 
     \item \code{\link[base]{\%\%}} 
     \item \code{\link[base]{\%/\%}} 
     \item \code{\link[magrittr]{\%>\%}} 
@@ -135,6 +136,7 @@ fun3(x, ...)
     \item \code{\link{**}}
     \item \code{\link{/}}
     \item \code{\link{^}}
+    \item \code{\link{&}}
     \item \code{\link{\%\%}}
     \item \code{\link{\%/\%}}
     \item \code{\link{\%*\%}}
