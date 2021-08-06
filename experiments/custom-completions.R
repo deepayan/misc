@@ -219,5 +219,27 @@ NSE1CompleterStandard <- function(token)
 }
 
 
+## complete.partial <- function(.CompletionEnv)
+## {
+##     text <- .CompletionEnv[["token"]]
+##     prefix <- substring(text, 1, .CompletionEnv$BEGIN-1)
+##     text <- substring(text, .CompletionEnv$BEGIN)
+##     comps <- apropos(text)
+##     .CompletionEnv[["comps"]] <- paste0(prefix, comps)
+## }
+
+## complete.partial <- function(.CompletionEnv)
+## {
+##     .CompletionEnv[["comps"]] <- paste0("foo", sample(month.name, 5))
+## }
+
+## complete.partial <- function(.CompletionEnv)
+## {
+##     text <- .CompletionEnv[["token"]]
+##     comps <- apropos(text)
+##     .CompletionEnv[["comps"]] <- comps
+## }
+
+## rc.options(custom.completer = complete.partial)
 
 
