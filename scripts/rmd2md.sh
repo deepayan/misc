@@ -4,7 +4,7 @@ INFILE=$1
 MDFILE=${INFILE/.rmd/}.md
 
 echo "$INFILE ==> $MDFILE"
-Rscript -e "require(knitr); knit('$INFILE', output='$OUTFILE')"
+Rscript -e "require(knitr); knit('$INFILE', output='$MDFILE')"
 
 
 
