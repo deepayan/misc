@@ -1,4 +1,7 @@
 
+## https://stackoverflow.com/questions/69597466/move-cursor-escape-sequence
+## https://www.ele.uva.es/~jesus/lpcVT100/term.html
+
 ## Proof-of-concept implementation of completion for NSE functions.
 ## source() this file to use.
 
